@@ -1,0 +1,5 @@
+(executable
+ (public_name menu)
+ (preprocess (pps ppx_deriving.std ppx_deriving_yojson))
+ (name main)
+ (libraries re lwt cohttp cohttp-lwt-unix))

@@ -1,0 +1,98 @@
+open Ppx_deriving_yojson_runtime
+open Lwt.Syntax
+open Cohttp_lwt_unix
+open Logs_lwt
+
+type item_flag =
+  | Vegan [@value 4]
+  | Mwgci [@value 9]
+  | Vegetarian [@value 1]
+  | FarmToFork [@value 6]
+  | Halal [@value 10]
+  | SeafoodWatch [@value 3]
+  | Humane [@value 18]
+[@@deriving enum, show, yojson]
+
+type menu_item = {
+  id : string;
+  label : string;
+  description : string;
+  price : string;
+  station_id : string;
+  flags : item_flag list [@of_yojson (function
+    | `Assoc l -> Ok (List.filter_map (fun (k, _) -> k |> int_of_string |> item_flag_of_enum) l)
+    | _ -> Ok [])] [@key "cor_icon"];
+}
+[@@deriving show, yojson { strict = false }]
+
+let menu_items_of_yojson : Yojson.Safe.t -> menu_item list error_or = function
+  | `Assoc l -> map_bind (fun (_, v) -> menu_item_of_yojson v) [] l
+  | _ -> Error "Menu items data not in expected form"
+
+type station = {
+  id : string;
+  label : string;
+  items: string list;
+}
+[@@deriving show, yojson { strict = false }]
+type daypart = {
+  starttime : string;
+  endtime : string;
+  id : string;
+  label : string;
+  abbreviation : string;
+  message : string;
+  stations : station list;
+}
+[@@deriving show, yojson { strict = false }]
+
+let menu_items_re = Re.Perl.re "Bamco\\.menu\\_items = (.*);" |> Re.Perl.compile
+let daypart_re = Re.Perl.re "Bamco\\.dayparts\\['(\\d+)'\\] = (.*);" |> Re.Perl.compile
+
+type t = {
+  items : menu_item list;
+  dayparts : daypart list;
+}
+[@@deriving show]
+
+let debug_str s = print_endline s; s
+
+let parse_doc body : t option =
+  let ( let@ ) = Option.bind in
+  let@ items = (let m = Re.all menu_items_re body in Re.Group.get (List.nth m 0) 1)
+    |> Yojson.Safe.from_string |> menu_items_of_yojson |> function
+      | Ok v -> Some v
+      | Error s -> Logs.err (fun f -> f "Failed to parse menu items JSON: %s" s); None
+  in let@ dayparts = Re.all daypart_re body
+    |> List.map (fun g -> (Re.Group.get g 1 |> int_of_string, Re.Group.get g 2))
+    |> List.sort (fun (n1, _) (n2, _) -> n1 - n2)
+    |> List.map (fun (_, p) -> p |> Yojson.Safe.from_string |> daypart_of_yojson |> function
+      | Ok v -> Some v
+      | Error s -> Logs.err (fun f -> f "Failed to parse daypart JSON: %s" s); None)
+    |> List.fold_left (fun ao co -> let@ acc = ao in let@ cur = co in Some (cur :: acc)) (Some [])
+    |> Option.map List.rev
+  in Some { items; dayparts }
+
+let fetch_body () : (string, int) result Lwt.t =
+  let open Cohttp in
+  let* (resp, body) = Client.get (Uri.of_string Constants.ba_url) in
+  let code = resp |> Response.status |> Code.code_of_status in
+  if code <> 200 then (Error code) |> Lwt.return else
+  let+ b = body |> Cohttp_lwt.Body.to_string in
+  Ok b
+
+let data = ref None
+
+let update_data () =
+  let* body = fetch_body () in
+  match body with
+    | Ok body -> (match parse_doc body with
+      | Some v -> data := Some v; Lwt.return_unit
+      | None -> warn (fun f -> f "Parsing doc failed; not updating cached value"))
+    | Error code -> err (fun f -> code |> string_of_int |> f "Failed to fetch doc: %s")
+
+let rec run () =
+  let* () = update_data () in
+  let* () = info (fun f -> f "Updated data!") in
+  let* () = Lwt_unix.sleep 60. in
+  run ()
