@@ -23,6 +23,8 @@
   cohttp-lwt-unix
   re
   tls-lwt
-  logs))
+  logs
+  dream
+  ppx_fields_conv))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project

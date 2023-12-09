@@ -1,5 +1,10 @@
 (executable
  (public_name menu)
- (preprocess (pps ppx_deriving.std ppx_deriving_yojson))
+ (preprocess (pps ppx_deriving.std ppx_deriving_yojson ppx_fields_conv))
  (name main)
- (libraries re lwt cohttp cohttp-lwt-unix))
+ (libraries re lwt cohttp cohttp-lwt-unix dream dream-livereload))
+
+(rule
+ (targets template.ml)
+ (deps template.eml.ml)
+ (action (run dream_eml %{deps} --workspace %{workspace_root})))

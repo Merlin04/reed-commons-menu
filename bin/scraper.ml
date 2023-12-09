@@ -53,7 +53,7 @@ type t = {
   items : menu_item list;
   dayparts : daypart list;
 }
-[@@deriving show]
+[@@deriving show, fields ~getters]
 
 let debug_str s = print_endline s; s
 
