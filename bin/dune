@@ -2,9 +2,15 @@
  (public_name menu)
  (preprocess (pps ppx_deriving.std ppx_deriving_yojson ppx_fields_conv))
  (name main)
- (libraries re lwt cohttp cohttp-lwt-unix dream dream-livereload))
+ (libraries re lwt cohttp cohttp-lwt-unix dream dream-livereload calendar))
 
 (rule
  (targets template.ml)
  (deps template.eml.ml)
  (action (run dream_eml %{deps} --workspace %{workspace_root})))
+
+(rule
+ (target assets.ml)
+ (deps (source_tree ../assets))
+ (action (with-stdout-to %{null}
+  (run ocaml-crunch -m plain ../assets -o %{target}))))

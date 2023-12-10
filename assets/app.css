@@ -1,0 +1,24 @@
+:root {
+    --text-main: #2e3436;
+    --background-body: #ffffff;
+    --reed-red: #A70E16;
+}
+
+body {
+    max-width: 800px;
+    line-height: 1.4;
+    font-family: "Inter",BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif;
+    margin: 20px auto;
+    padding: 0 10px;
+    color: var(--text-main);
+    background: var(--background-body);
+    text-rendering: optimizeLegibility;
+}
+
+.alert {
+    max-width: max-content;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    background-color: var(--reed-red);
+    color: var(--background-body);
+}

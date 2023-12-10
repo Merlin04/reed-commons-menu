@@ -25,6 +25,8 @@
   tls-lwt
   logs
   dream
-  ppx_fields_conv))
+  ppx_fields_conv
+  crunch
+  calendar))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
