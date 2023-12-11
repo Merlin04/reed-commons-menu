@@ -2,6 +2,8 @@ open Ppx_deriving_yojson_runtime
 open Lwt.Syntax
 open Cohttp_lwt_unix
 open Logs_lwt
+open Timmy
+open Dtime
 
 type item_flag =
   | Vegan [@value 4]
@@ -35,9 +37,19 @@ type station = {
   items: string list;
 }
 [@@deriving show, yojson { strict = false }]
+let time_of_yojson = function
+  | `String s -> Ok (time_of_string s)
+  | _ -> Error "Time field not a string"
+let time_to_yojson = fun t -> `String (string_of_time t)
 type daypart = {
-  starttime : string;
-  endtime : string;
+  starttime : Daytime.t
+    [@of_yojson time_of_yojson]
+    [@to_yojson time_to_yojson]
+    [@printer time_pp];
+  endtime : Daytime.t
+    [@of_yojson time_of_yojson]
+    [@to_yojson time_to_yojson]
+    [@printer time_pp];
   id : string;
   label : string;
   abbreviation : string;
@@ -82,12 +94,13 @@ let fetch_body () : (string, int) result Lwt.t =
   Ok b
 
 let data = ref None
+let last_updated = ref (Clock.now ())
 
 let update_data () =
   let* body = fetch_body () in
   match body with
     | Ok body -> (match parse_doc body with
-      | Some v -> data := Some v; Lwt.return_unit
+      | Some v -> data := Some v; last_updated := Clock.now (); Lwt.return_unit
       | None -> warn (fun f -> f "Parsing doc failed; not updating cached value"))
     | Error code -> err (fun f -> code |> string_of_int |> f "Failed to fetch doc: %s")
 

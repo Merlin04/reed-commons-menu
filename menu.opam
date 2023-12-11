@@ -18,7 +18,7 @@ depends: [
   "dream"
   "ppx_fields_conv"
   "crunch"
-  "calendar"
+  "timmy"
   "odoc" {with-doc}
 ]
 build: [

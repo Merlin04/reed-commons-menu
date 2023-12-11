@@ -1,6 +1,7 @@
 :root {
     --text-main: #2e3436;
     --background-body: #ffffff;
+    --light-gray: #e1e0db;
     --reed-red: #A70E16;
 }
 
@@ -16,9 +17,42 @@ body {
 }
 
 .alert {
-    max-width: max-content;
+    /*max-width: max-content;*/
     padding: 0.5rem;
     border-radius: 0.25rem;
     background-color: var(--reed-red);
     color: var(--background-body);
+}
+
+.alert::before {
+    content: "⚠ ";
+}
+
+details {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    padding: 0.25rem 1rem;
+    /*background-color: rgba(0, 0, 0, 0.1);*/
+    background-color: var(--light-gray);
+}
+
+details summary {
+    margin: -0.25rem -1rem;
+    padding: 0.25rem 1rem;
+    background-color: rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    user-select: none;
+}
+
+#title {
+    background-color: var(--light-gray);
+    /*color: var(--background-body);*/
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+}
+
+#footer {
+    text-align: center;
+    font-style: italic;
+    color: rgba(0, 0, 0, 0.5);
 }
