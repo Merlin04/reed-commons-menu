@@ -148,7 +148,7 @@ let render () =
       <li><b>Homer's Hut</b> is a convenience store shop run by Reed's non-profit <a href="https://www.reed.edu/guidebook/coll_resource/bookstore.html">bookstore</a>. It has a wide variety of snacks, meal options (including ramen), drinks, and personal care items like toothpaste, soap, birth control, condoms, ibuprofen, etc. It's inside the bookstore, which is in the GCC basement (one floor below Commons). In addition to regular daytime bookstore hours, Homer's Hut is open from 6:00 PM-2:00 AM on weekdays and 5:00 PM-2:00 AM on weekends.</li>
     </ul>
     <h3 id="site-about">Who runs this site?</h3>
-    <p>Hi! I'm a Reed student/CS major - I made this site for fun (and so I could more easily see what's for dinner), and all of the source code is available <a href="https://github.com/Merlin04/bamco-menu">here</a>. If you have any questions or concerns, feel free to message me on Discord (username is the same as my GitHub username) or send me an email (address is on my <a href="https://enby.land">website</a>).</p>
+    <p>Hi! I'm a Reed student/CS major - I made this site for fun (and so I could more easily see what's for dinner), and all of the source code is available <a href="https://github.com/Merlin04/reed-commons-menu">here</a>. If you have any questions or concerns, feel free to message me on Discord (username is the same as my GitHub username) or send me an email (address is on my <a href="https://enby.land">website</a>).</p>
 
     <p id="footer">Up to date as of <%s Timmy.Time.to_string ~timezone:Dtime.timezone !Scraper.last_updated %> <img src="https://cdn.blahaj.social/cache/custom_emojis/images/000/017/751/original/b5a9143029c6b21a.png" alt="blahaj" height=16 width=16 /></p>
   </body>
