@@ -16,9 +16,11 @@ depends: [
   "tls-lwt"
   "logs"
   "dream"
+  "dream-livereload"
   "ppx_fields_conv"
   "crunch"
   "timmy"
+  "timmy-unix"
   "odoc" {with-doc}
 ]
 build: [

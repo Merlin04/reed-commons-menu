@@ -16,6 +16,15 @@ body {
     text-rendering: optimizeLegibility;
 }
 
+a {
+    color: var(--reed-red);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
 .alert {
     /*max-width: max-content;*/
     padding: 0.5rem;

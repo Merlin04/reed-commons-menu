@@ -115,16 +115,16 @@ let render () =
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css" />-->
     <link rel="stylesheet" href="/assets/app.css" />
     <title>Reed Commons Menu</title>
+    <meta name="description" content="Daily menu for Reed College Commons cafeteria. See what food Bon Appetit's cafe is serving at the dining hall today." />
 % if !Scraper.data |> Option.is_none then begin
     <meta http-equiv="refresh" content="1" />
 % end
 % else ();
   </head>
   <body>
-    <h1 id="title">Reed Commons Menu</h1>
+    <h1 id="title">Reed Commons Cafe Menu</h1>
 % if !Scraper.data |> Option.is_some then begin
     <%s! render_data () %>
 % if debug_include_data_in_response then begin
@@ -133,6 +133,23 @@ let render () =
 % else ();
 % end
 % else ();
+    <h2 id="faqs">FAQs</h2>
+    <p><a href="https://www.reed.edu/res_life/dining-food-services/bon-appetit.html">Reed College's Commons cafeteria</a> is the main cafe and only full dining hall on campus, located in the Gray Campus Center (GCC), with a variety of stations including vegetarian, vegan, halal, and made without gluten options. It is run by Bon Appetit food services company. Commons takes board points, cash, and card. The dining hall also has microwaves.</p>
+    <h3 id="commons-hours">What are Reed Commons hours?</h3>
+    <p>Hours for Commons vary, but typically on weekdays they are open from 7:30 AM-10:30 AM for breakfast, 11:00 AM-4:00 PM for lunch, and 5:00 PM-7:00 PM for dinner. On weekends, they are usually open from 10:00 AM-2:30 PM for brunch and 5:00 PM-7:00 PM for dinner. Be sure to check this site to see if Commons is open right now before going.</p>
+    <h3 id="commons-address">Where is Reed College dining hall located?</h3>
+    <p>Reed's Commons dining hall is located in the <a href="https://maps.app.goo.gl/jaMJVc3RVkges2SF7">Gray Campus Center (GCC)</a>, behind the Old Dorm Block and near the Performing Arts Building (PAB). Its address is the same as Reed's address, which is 3203 SE Woodstock Blvd, Portland, OR 97202.</p>
+    <h3 id="campus-meal-options">Where can I eat at Reed College?</h3>
+    In addition to Commons, there are a few other places to eat on campus:
+    <ul>
+      <li><b>Paradox Cafe</b> is an independent student-run cafe with two on-campus locations; the Olde Shoppe is located inside the Student Union (attached to the GCC) and the Nu Shoppe (also called Paradox Lost) is attached to the biology building. Paradox offers (in my opinion, very good) drinks and pastries and a great place to hang out or study. If you're able to, go to Paradox instead of one of Bon Appetit's cafes to support student workers and <a href="https://reedquest.org/2023/10/14/paradox-regained/">keep Paradox alive!</a></li>
+      <li><b>Canyon Cafe</b> (run by Bon Appetit) is located across the canyon near the Grove and offers a variety of drinks and snacks. Canyon Cafe is usually open from 7:30 AM-3:00 PM on weekdays.</li>
+      <li><b>Marketplace</b> (also run by Bon Appetit) is inside Commons and offers various prepackaged snacks and drinks, as well as some pantry essentials. It's usually open from 10:00 AM-9:00 PM on the weekdays and 1:00 PM-5:00 PM on the weekends.</li>
+      <li><b>Homer's Hut</b> is a convenience store shop run by Reed's non-profit <a href="https://www.reed.edu/guidebook/coll_resource/bookstore.html">bookstore</a>. It has a wide variety of snacks, meal options (including ramen), drinks, and personal care items like toothpaste, soap, birth control, condoms, ibuprofen, etc. It's inside the bookstore, which is in the GCC basement (one floor below Commons). In addition to regular daytime bookstore hours, Homer's Hut is open from 6:00 PM-2:00 AM on weekdays and 5:00 PM-2:00 AM on weekends.</li>
+    </ul>
+    <h3 id="site-about">Who runs this site?</h3>
+    <p>Hi! I'm a Reed student/CS major - I made this site for fun (and so I could more easily see what's for dinner), and all of the source code is available <a href="https://github.com/Merlin04/bamco-menu">here</a>. If you have any questions or concerns, feel free to message me on Discord (username is the same as my GitHub username) or send me an email (address is on my <a href="https://enby.land">website</a>).</p>
+
     <p id="footer">Up to date as of <%s Timmy.Time.to_string ~timezone:Dtime.timezone !Scraper.last_updated %> <img src="https://cdn.blahaj.social/cache/custom_emojis/images/000/017/751/original/b5a9143029c6b21a.png" alt="blahaj" height=16 width=16 /></p>
   </body>
   </html>

@@ -18,5 +18,6 @@ let run () =
   @@ (Dream.router ([
     Dream.get "/" (fun _request ->
       render () |> Dream.html);
+    Dream.get "/favicon.ico" (Dream.static ~loader "");
     Dream.get "/assets/**" (Dream.static ~loader "")
   ] @ (if debug_web then [Dream_livereload.route ()] else [])))
