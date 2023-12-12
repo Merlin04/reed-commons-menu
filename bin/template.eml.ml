@@ -112,7 +112,7 @@ let render_data () =
 
 let render () =
   <!DOCTYPE html>
-  <html>
+  <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -123,6 +123,15 @@ let render () =
     <meta http-equiv="refresh" content="1" />
 % end
 % else ();
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1631GPJYKP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-1631GPJYKP');
+    </script>
   </head>
   <body>
     <h1 id="title">Reed Commons Cafe Menu</h1>
