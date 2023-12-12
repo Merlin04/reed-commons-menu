@@ -13,7 +13,7 @@ type item_flag =
   | Halal [@value 10]
   | SeafoodWatch [@value 3]
   | Humane [@value 18]
-[@@deriving enum, show, yojson]
+[@@deriving enum, show { with_path = false }, yojson]
 
 type menu_item = {
   id : string;

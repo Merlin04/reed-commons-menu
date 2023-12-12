@@ -19,6 +19,8 @@ body {
 .alert {
     /*max-width: max-content;*/
     padding: 0.5rem;
+    padding-left: 2.25rem;
+    position: relative;
     border-radius: 0.25rem;
     background-color: var(--reed-red);
     color: var(--background-body);
@@ -26,6 +28,8 @@ body {
 
 .alert::before {
     content: "⚠ ";
+    position: absolute;
+    left: 0.75rem;
 }
 
 details {
@@ -45,14 +49,120 @@ details summary {
 }
 
 #title {
-    background-color: var(--light-gray);
-    /*color: var(--background-body);*/
+    /*background-color: var(--light-gray);*/
+    color: var(--background-body);
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+#title::before {
+    position: absolute;
+    inset: 0;
+    content: "";
+    background-color: var(--reed-red);
+    opacity: 0.75;
+    z-index: -1;
 }
 
 #footer {
     text-align: center;
     font-style: italic;
     color: rgba(0, 0, 0, 0.5);
+}
+
+#contents {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stations {
+    column-count: 2;
+    column-width: 250px;
+}
+
+.stations > * {
+    break-inside: avoid;
+}
+
+h3 {
+    margin-top: 0;
+}
+
+h4 {
+    margin: 0;
+}
+
+.station {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.station h3 {
+    margin: -0.5rem -0.5rem 0.5rem -0.5rem;
+    background-color: var(--light-gray);
+    padding: 0.5rem;
+}
+
+.station h4 {
+    font-size: 1.1rem;
+}
+
+.price {
+    font-weight: normal;
+}
+
+.station ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+.station li {
+    margin-bottom: 0.25rem;
+}
+
+details .station h3 {
+    mix-blend-mode: multiply;
+}
+
+.flag {
+    font-size: 0.9rem;
+    font-weight: normal;
+    gap: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.25rem;
+    color: #ffffff;
+}
+
+.flag.vegetarian {
+    background-color: #7c8034;
+}
+
+.flag.vegan {
+    background-color: #11864a;
+}
+
+.flag.mwgci {
+    background-color: #bb7332;
+}
+
+.flag.halal {
+    background-color: #003463;
+}
+
+.flag.farmtofork {
+    background-color: #743d2b;
+}
+
+.flag.seafoodwatch {
+    background-color: #0084ae;
+}
+
+.flag.humane {
+    background-color: #ee7624;
 }
