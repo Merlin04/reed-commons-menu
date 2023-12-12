@@ -2,7 +2,7 @@
  (public_name menu)
  (preprocess (pps ppx_deriving.std ppx_deriving_yojson ppx_fields_conv))
  (name main)
- (libraries re lwt cohttp cohttp-lwt-unix dream dream-livereload calendar timmy timmy-unix.clock))
+ (libraries re lwt cohttp cohttp-lwt-unix dream dream-livereload timmy timmy-unix.clock))
 
 (rule
  (targets template.ml)

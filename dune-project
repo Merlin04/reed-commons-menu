@@ -25,8 +25,10 @@
   tls-lwt
   logs
   dream
+  dream-livereload
   ppx_fields_conv
   crunch
-  timmy))
+  timmy
+  timmy-unix))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
