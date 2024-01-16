@@ -105,7 +105,9 @@ let update_data () =
     | Error code -> err (fun f -> code |> string_of_int |> f "Failed to fetch doc: %s")
 
 let rec run () =
-  let* () = update_data () in
-  let* () = info (fun f -> f "Updated data!") in
-  let* () = Lwt_unix.sleep 60. in
+  let* () = Lwt.catch (fun () ->
+    let* () = update_data () in
+    let* () = info (fun f -> f "Updated data!") in
+    Lwt_unix.sleep 60.
+  ) (fun e -> err (fun f -> f "Uncaught exception in scraper: %s" (Printexc.to_string e))) in
   run ()
