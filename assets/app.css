@@ -18,7 +18,7 @@ body {
 
 a {
     color: var(--reed-red);
-    text-decoration: none;
+    text-decoration: underline dotted;
 }
 
 a:hover {
@@ -39,6 +39,10 @@ a:hover {
     content: "⚠ ";
     position: absolute;
     left: 0.75rem;
+}
+
+.alert a {
+    color: var(--background-body);
 }
 
 details {

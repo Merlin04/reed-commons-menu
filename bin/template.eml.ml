@@ -68,6 +68,12 @@ let render_data () =
     else (a, cur :: p, f)) ([], [], []) dayparts in
   let future = List.rev future in
   <div id="contents">
+% if !Scraper.stale then begin
+  <p class="alert">
+    There was an internal error fetching the most up-to-date menu data from Bon Appetit; if this continues for more than a minute or two and the <a href="https://reed.cafebonappetit.com">official menu site</a> is working properly, please <a href="site-about">contact me</a> because something is broken.
+  </p>
+% end
+% else ();
 % if past <> [] then begin
   <details>
     <summary>past hours (<%s past |> List.map (fun d -> d.label) |> String.concat ", " %>) </summary>
@@ -160,6 +166,6 @@ let render () =
     <h3 id="site-about">Who runs this site?</h3>
     <p>Hi! I'm a Reed student/CS major - I made this site for fun (and so I could more easily see what's for dinner) (and to procrastinate starting my finals), and all of the source code is available <a href="https://github.com/Merlin04/reed-commons-menu">here</a>. If you have any questions or concerns, feel free to message me on Discord (username is the same as my GitHub username) or send me an email (address is on my <a href="https://enby.land">website</a>).</p>
 
-    <p id="footer">Up to date as of <%s Timmy.Time.to_string ~timezone:Dtime.timezone !Scraper.last_updated %> <img src="https://cdn.blahaj.social/cache/custom_emojis/images/000/017/751/original/b5a9143029c6b21a.png" alt="blahaj" height=16 width=16 /></p>
+    <p id="footer">Up to date as of <%s Timmy.Time.to_string ~timezone:Dtime.timezone !Scraper.last_updated %> <img src="/assets/blahaj.png" alt="blahaj" height=16 width=16 /></p>
   </body>
   </html>

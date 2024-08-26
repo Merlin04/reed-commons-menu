@@ -107,13 +107,14 @@ let fetch_body () : (string, int) result Lwt.t =
 
 let data = ref None
 let last_updated = ref (Clock.now ())
+let stale = ref true
 
 let update_data () =
   let* body = fetch_body () in
   match body with
     | Ok body -> (match parse_doc body with
-      | Some v -> data := Some v; last_updated := Clock.now (); Lwt.return_unit
-      | None -> warn (fun f -> f "Parsing doc failed; not updating cached value"))
+      | Some v -> data := Some v; last_updated := Clock.now (); stale := false; Lwt.return_unit
+      | None -> stale := true; warn (fun f -> f "Parsing doc failed; not updating cached value"))
     | Error code -> err (fun f -> code |> string_of_int |> f "Failed to fetch doc: %s")
 
 let rec run () =
