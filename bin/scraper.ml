@@ -31,6 +31,13 @@ let menu_items_of_yojson : Yojson.Safe.t -> menu_item list error_or = function
   | `Assoc l -> map_bind (fun (_, v) -> menu_item_of_yojson v) [] l
   | _ -> Error "Menu items data not in expected form"
 
+(* i think this should be good enough? if we need to, generalize to just 262 or add allowlist for 265, 266 *)
+let item_id_denylist = ["2627"; "2628"]
+
+let filter_station_items : string list -> string list = List.filter (fun v ->
+  not @@ List.exists (fun p -> String.starts_with ~prefix:p v) item_id_denylist
+)
+
 type station = {
   id : string;
   label : string;
@@ -82,7 +89,12 @@ let parse_doc body : t option =
       | Ok v -> Some v
       | Error s -> Logs.err (fun f -> f "Failed to parse daypart JSON: %s" s); None)
     |> List.fold_left (fun ao co -> let@ acc = ao in let@ cur = co in Some (cur :: acc)) (Some [])
-    |> Option.map List.rev
+    |> Option.map (fun ds -> ds
+        |> List.map (fun d -> { d with stations =
+            List.map (fun (s : station) -> { s with items = filter_station_items s.items }) d.stations
+              |> List.filter (fun (s : station) -> List.length s.items <> 0) })
+        |> List.rev
+    )
   in Some { items; dayparts }
 
 let fetch_body () : (string, int) result Lwt.t =
