@@ -1,7 +1,15 @@
-open Timmy
-open Dtime
-
 let debug_include_data_in_response = false
+
+let tz = Timedesc.Time_zone.make_exn "America/Los_Angeles"
+
+let string_of_timespan (s : Timedesc.Span.t) =
+  let v = Timedesc.Span.For_human.view s in
+  let h = v.hours mod 12 in
+  let h = if h = 0 then 12 else h in
+  let pm_str = if v.hours / 12 > 0 then "PM" else "AM" in
+  if v.minutes <> 0 then
+    (string_of_int h) ^ ":" ^ (string_of_int v.minutes) ^ pm_str
+  else (string_of_int h) ^ pm_str
 
 let asset name =
   let hash = match Assets.hash name with
@@ -51,7 +59,7 @@ let render_daypart d menu_items =
   let open Scraper in
   let { label; starttime; endtime; stations; message; _ } = d in
   <div class="daypart">
-  <h2><%s label %> (open <%s string_of_time starttime %> to <%s string_of_time endtime %>)</h2>
+  <h2><%s label %> (open <%s string_of_timespan starttime %> to <%s string_of_timespan endtime %>)</h2>
 %if message <> "" then begin
   <p class="alert"><%s message %></p>
 % end
@@ -64,14 +72,14 @@ let render_daypart d menu_items =
   </div>
 
 let render_data ({ items; dayparts } : Scraper.t) (stale : bool) =
-  let now = now () in
-(*  print_endline (string_of_time now); *)
+  let now = Timedesc.now ~tz_of_date_time:tz () |> Timedesc.time |> Timedesc.Time.to_span in
+(*  print_endline (string_of_timespan now); *)
   (* debug end/start times *)
-(*  print_endline (string_of_time (List.hd dayparts).endtime); *)
-(*  print_endline (string_of_time (List.hd dayparts).starttime); *)
+(*  print_endline (string_of_timespan (List.hd dayparts).endtime); *)
+(*  print_endline (string_of_timespan (List.hd dayparts).starttime); *)
   let (past, present, future) = List.fold_left (fun (a, p, f) cur ->
-    if Daytime.compare cur.Scraper.endtime now = -1 then (cur :: a, p, f) else
-    if Daytime.compare cur.Scraper.starttime now = 1 then (a, p, cur :: f)
+    if Timedesc.Span.compare cur.Scraper.endtime now = -1 then (cur :: a, p, f) else
+    if Timedesc.Span.compare cur.Scraper.starttime now = 1 then (a, p, cur :: f)
     else (a, cur :: p, f)) ([], [], []) dayparts in
   let future = List.rev future in
   <div id="contents">
@@ -112,18 +120,18 @@ let render_data ({ items; dayparts } : Scraper.t) (stale : bool) =
   <p class="alert">
     commons isn't open right now :(
 % if List.length past <> 0 then begin
-    <br /><%s (List.nth past 0).label %> closed at <%s string_of_time (List.nth past 0).endtime %>
+    <br /><%s (List.nth past 0).label %> closed at <%s string_of_timespan (List.nth past 0).endtime %>
 % end
 % else ();
 % if List.length future <> 0 then begin
-    <br /><%s (List.nth future 0).label %> will open at <%s string_of_time (List.nth future 0).starttime %>
+    <br /><%s (List.nth future 0).label %> will open at <%s string_of_timespan (List.nth future 0).starttime %>
 % end
 % else ();
   </p>
 % end;
   </div>
 
-let render ~(data : Scraper.t option) ~(stale : bool) ~(last_updated : Time.t) () =
+let render ~data ~stale ~last_updated () =
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -173,6 +181,6 @@ let render ~(data : Scraper.t option) ~(stale : bool) ~(last_updated : Time.t) (
     <h3 id="site-about">Who runs this site?</h3>
     <p>Hi! I'm a Reed student/CS major - I made this site for fun (and so I could more easily see what's for dinner) (and to procrastinate starting my finals), and you can check out the <a href="https://github.com/Merlin04/reed-commons-menu">source code on GitHub</a>. If you have any questions or concerns, feel free to message me on Discord (username is the same as my GitHub username) or send me an email (address is on <a href="https://enby.land">my website</a>).</p>
 
-    <p id="footer">Up to date as of <%s Timmy.Time.to_string ~timezone:Dtime.timezone last_updated %> <img src="<%s asset "blahaj.png" %>" alt="blahaj" height=16 width=16 /></p>
+    <p id="footer">Up to date as of <%s Timedesc.Timestamp.to_string ~display_using_tz:tz last_updated %> <img src="<%s asset "blahaj.png" %>" alt="blahaj" height=16 width=16 /></p>
   </body>
   </html>

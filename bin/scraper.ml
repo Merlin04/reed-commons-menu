@@ -1,6 +1,4 @@
 open Ppx_deriving_yojson_runtime
-open Timmy
-open Dtime
 
 type item_flag =
   | Vegan [@value 4]
@@ -34,19 +32,25 @@ type station = {
   items: string list;
 }
 [@@deriving show, yojson { strict = false }]
-let time_of_yojson = function
-  | `String s -> Ok (time_of_string s)
+
+ let timespan_of_string s = match String.split_on_char ':' s with
+  | [h; m] -> Timedesc.Span.For_human.make_exn ~hours:(int_of_string h) ~minutes:(int_of_string m) ()
+  | _ -> failwith "Invalid time string"
+
+let timespan_of_yojson = function
+  | `String s -> Ok (timespan_of_string s)
   | _ -> Error "Time field not a string"
-let time_to_yojson = fun t -> `String (string_of_time t)
+let timespan_to_yojson = fun t -> `String (Timedesc.Span.to_string t)
+
 type daypart = {
-  starttime : Daytime.t
-    [@of_yojson time_of_yojson]
-    [@to_yojson time_to_yojson]
-    [@printer time_pp];
-  endtime : Daytime.t
-    [@of_yojson time_of_yojson]
-    [@to_yojson time_to_yojson]
-    [@printer time_pp];
+  starttime : Timedesc.Span.t
+    [@of_yojson timespan_of_yojson]
+    [@to_yojson timespan_to_yojson]
+    [@printer Timedesc.Span.pp];
+  endtime : Timedesc.Span.t
+    [@of_yojson timespan_of_yojson]
+    [@to_yojson timespan_to_yojson]
+    [@printer Timedesc.Span.pp];
   id : string;
   label : string;
   abbreviation : string;

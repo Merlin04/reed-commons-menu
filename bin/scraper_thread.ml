@@ -2,7 +2,6 @@ open Ppx_deriving_yojson_runtime
 open Lwt.Syntax
 open Cohttp_lwt_unix
 open Logs_lwt
-open Timmy
 open Scraper
 
 (* i think this should be good enough? if we need to, generalize to just 262 or add allowlist for 265, 266 *)
@@ -49,7 +48,7 @@ let fetch_body () : (string, int) result Lwt.t =
 module Mutable_state = struct
   type t = {
     mutable data : Scraper.t option;
-    mutable last_updated : Time.t;
+    mutable last_updated : Timedesc.Timestamp.t;
     mutable stale : bool;
   }
   [@@deriving fields ~fields]
@@ -58,14 +57,14 @@ module Mutable_state = struct
   (* definitely overkill but it would be cool *)
   type t_immutable = {
     data : Scraper.t option;
-    last_updated : Time.t;
+    last_updated : Timedesc.Timestamp.t;
     stale : bool;
   }
   [@@deriving stable_record ~version:t]
 
   let _state : t = {
     data = None;
-    last_updated = (Clock.now ());
+    last_updated = (Timedesc.Timestamp.now ());
     stale = true;
   }
 
@@ -87,7 +86,7 @@ let update_data () =
       | Some v ->
         let open Mutable_state in
         set_state_field Fields.data (Some v);
-        set_state_field Fields.last_updated (Clock.now ());
+        set_state_field Fields.last_updated (Timedesc.Timestamp.now ());
         set_state_field Fields.stale false;
         Lwt.return_unit
       | None ->
