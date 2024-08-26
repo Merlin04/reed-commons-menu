@@ -1,6 +1,6 @@
 (executable
  (public_name menu)
- (preprocess (pps ppx_deriving.std ppx_deriving_yojson ppx_fields_conv))
+ (preprocess (pps ppx_deriving.std ppx_deriving_yojson ppx_fields_conv ppx_stable))
  (name main)
  (libraries re lwt cohttp cohttp-lwt-unix dream dream-livereload timmy timmy-unix.clock))
 

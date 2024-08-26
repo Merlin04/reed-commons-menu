@@ -27,6 +27,7 @@
   dream
   dream-livereload
   ppx_fields_conv
+  ppx_stable
   crunch
   timmy
   timmy-unix))

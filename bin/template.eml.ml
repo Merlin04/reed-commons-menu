@@ -1,13 +1,19 @@
-open Scraper
 open Timmy
 open Dtime
 
 let debug_include_data_in_response = false
 
-let class_name_of_item_flag f =
-  show_item_flag f |> String.lowercase_ascii
+let asset name =
+  let hash = match Assets.hash name with
+    | Some h -> h
+    | None -> failwith @@ "Asset " ^ name ^ " does not exist"
+  in
+  "/assets/" ^ name ^ "?" ^ hash
 
-let display_name_of_item_flag = function
+let class_name_of_item_flag f =
+  Scraper.show_item_flag f |> String.lowercase_ascii
+
+let display_name_of_item_flag = let open Scraper in function
   | FarmToFork -> "farm to fork"
   | SeafoodWatch -> "seafood watch"
   | f -> class_name_of_item_flag f
@@ -15,13 +21,14 @@ let display_name_of_item_flag = function
 let render_item_flag f =
   <span class="flag <%s class_name_of_item_flag f %>"><%s display_name_of_item_flag f %></span>
 
-let render_station (s : station) =
+let render_station (s : Scraper.station) (menu_items : Scraper.menu_item list) =
+  let open Scraper in
   let { label; items = station_items; _ } = s in
-  let { items; _ } = !Scraper.data |> Option.get in
+  let get_item_by_id item_id = List.find (fun ({ id; _ } : menu_item) -> id = item_id) menu_items in
   <div class="station">
   <h3><%s label %></h3>
   <ul>
-% station_items |> List.iter begin fun item_id -> let { label; description; price; flags; _ } = List.find (fun ({ id; _ } : menu_item) -> id = item_id) items in
+% station_items |> List.iter begin fun id -> let { label; description; price; flags; _ } = get_item_by_id id in
     <li><h4><%s label %>
 % if price <> "" then begin
           <span class="price">(<%s price %>)</span>
@@ -40,7 +47,8 @@ let render_station (s : station) =
   </ul>
   </div>
 
-let render_daypart d =
+let render_daypart d menu_items =
+  let open Scraper in
   let { label; starttime; endtime; stations; message; _ } = d in
   <div class="daypart">
   <h2><%s label %> (open <%s string_of_time starttime %> to <%s string_of_time endtime %>)</h2>
@@ -50,25 +58,24 @@ let render_daypart d =
 % else ();
   <div class="stations">
 % stations |> List.filter (fun (station : station) -> ["1"; "3"; "4"] |> List.exists (fun p -> String.starts_with ~prefix:p station.id) |> not) |> List.iter begin fun s ->
-  <%s! render_station s %>
+  <%s! render_station s menu_items %>
 % end;
   </div>
   </div>
 
-let render_data () =
-  let { items = _items; dayparts } = (!Scraper.data) |> Option.get in
+let render_data ({ items; dayparts } : Scraper.t) (stale : bool) =
   let now = now () in
-  print_endline (string_of_time now);
+(*  print_endline (string_of_time now); *)
   (* debug end/start times *)
-  print_endline (string_of_time (List.hd dayparts).endtime);
-  print_endline (string_of_time (List.hd dayparts).starttime);
+(*  print_endline (string_of_time (List.hd dayparts).endtime); *)
+(*  print_endline (string_of_time (List.hd dayparts).starttime); *)
   let (past, present, future) = List.fold_left (fun (a, p, f) cur ->
-    if Daytime.compare cur.endtime now = -1 then (cur :: a, p, f) else
-    if Daytime.compare cur.starttime now = 1 then (a, p, cur :: f)
+    if Daytime.compare cur.Scraper.endtime now = -1 then (cur :: a, p, f) else
+    if Daytime.compare cur.Scraper.starttime now = 1 then (a, p, cur :: f)
     else (a, cur :: p, f)) ([], [], []) dayparts in
   let future = List.rev future in
   <div id="contents">
-% if !Scraper.stale then begin
+% if stale then begin
   <p class="alert">
     There was an internal error fetching the most up-to-date menu data from Bon Appetit; if this continues for more than a minute or two and the <a href="https://reed.cafebonappetit.com">official menu site</a> is working properly, please <a href="site-about">contact me</a> because something is broken.
   </p>
@@ -76,10 +83,10 @@ let render_data () =
 % else ();
 % if past <> [] then begin
   <details>
-    <summary>past hours (<%s past |> List.map (fun d -> d.label) |> String.concat ", " %>) </summary>
+    <summary>past hours (<%s past |> List.map (fun d -> d.Scraper.label) |> String.concat ", " %>) </summary>
     <div>
 % past |> List.iter begin fun d ->
-      <%s! render_daypart d %>
+      <%s! render_daypart d items %>
 % end;
     </div>
   </details>
@@ -87,10 +94,10 @@ let render_data () =
 % else ();
 % if future <> [] then begin
   <details>
-    <summary>future hours (<%s future |> List.map (fun d -> d.label) |> String.concat ", " %>) </summary>
+    <summary>future hours (<%s future |> List.map (fun d -> d.Scraper.label) |> String.concat ", " %>) </summary>
     <div>
 % future |> List.iter begin fun d ->
-      <%s! render_daypart d %>
+      <%s! render_daypart d items %>
 % end;
     </div>
   </details>
@@ -98,7 +105,7 @@ let render_data () =
 % else ();
 % if List.length present <> 0 then begin
 % present |> List.iter begin fun d ->
-  <%s! render_daypart d %>
+  <%s! render_daypart d items %>
 % end;
 % end
 % else begin
@@ -116,16 +123,16 @@ let render_data () =
 % end;
   </div>
 
-let render () =
+let render ~(data : Scraper.t option) ~(stale : bool) ~(last_updated : Time.t) () =
   <!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/assets/app.css" />
+    <link rel="stylesheet" href="<%s asset "app.css" %>" />
     <title>Reed Commons Menu</title>
     <meta name="description" content="Daily menu for Reed College Commons cafeteria. See what food Bon Appetit's cafe is serving at the dining hall today." />
-% if !Scraper.data |> Option.is_none then begin
+% if Option.is_none data then begin
     <meta http-equiv="refresh" content="1" />
 % end
 % else ();
@@ -141,10 +148,10 @@ let render () =
   </head>
   <body>
     <h1 id="title">Reed Commons Cafe Menu</h1>
-% if !Scraper.data |> Option.is_some then begin
-    <%s! render_data () %>
+% if Option.is_some data then begin
+    <%s! render_data (Option.get data) stale %>
 % if debug_include_data_in_response then begin
-    <%s Scraper.show (!Scraper.data |> Option.get) %>
+    <%s data |> Option.get |> Scraper.show %>
 % end
 % else ();
 % end
@@ -166,6 +173,6 @@ let render () =
     <h3 id="site-about">Who runs this site?</h3>
     <p>Hi! I'm a Reed student/CS major - I made this site for fun (and so I could more easily see what's for dinner) (and to procrastinate starting my finals), and you can check out the <a href="https://github.com/Merlin04/reed-commons-menu">source code on GitHub</a>. If you have any questions or concerns, feel free to message me on Discord (username is the same as my GitHub username) or send me an email (address is on <a href="https://enby.land">my website</a>).</p>
 
-    <p id="footer">Up to date as of <%s Timmy.Time.to_string ~timezone:Dtime.timezone !Scraper.last_updated %> <img src="/assets/blahaj.png" alt="blahaj" height=16 width=16 /></p>
+    <p id="footer">Up to date as of <%s Timmy.Time.to_string ~timezone:Dtime.timezone last_updated %> <img src="<%s asset "blahaj.png" %>" alt="blahaj" height=16 width=16 /></p>
   </body>
   </html>
