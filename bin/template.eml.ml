@@ -1,5 +1,8 @@
 let debug_include_data_in_response = false
 
+let escaped_br_re = Re.Perl.re "&lt;br( )*/&gt;" |> Re.Perl.compile
+let escape_html_except_br str = Dream.html_escape str |> Re.replace_string escaped_br_re ~by:"<br />"
+
 let tz = Timedesc.Time_zone.make_exn "America/Los_Angeles"
 
 let string_of_timespan (s : Timedesc.Span.t) =
@@ -47,7 +50,7 @@ let render_station (s : Scraper.station) (menu_items : Scraper.menu_item list) =
 % end;
     </h4>
 % if description <> "" then begin
-      <span class="description"><%s description %></span>
+      <span class="description"><%s! (escape_html_except_br description) %></span>
 % end
 % else ();
     </li>
