@@ -50,6 +50,7 @@ module Mutable_state = struct
     mutable data : Scraper.t option;
     mutable last_updated : Timedesc.Timestamp.t;
     mutable stale : bool;
+    mutable message : string option;
   }
   [@@deriving fields ~fields]
 
@@ -59,6 +60,7 @@ module Mutable_state = struct
     data : Scraper.t option;
     last_updated : Timedesc.Timestamp.t;
     stale : bool;
+    message : string option;
   }
   [@@deriving stable_record ~version:t]
 
@@ -66,6 +68,7 @@ module Mutable_state = struct
     data = None;
     last_updated = (Timedesc.Timestamp.now ());
     stale = true;
+    message = None;
   }
 
   let update_since_last_use = ref true
@@ -75,8 +78,10 @@ module Mutable_state = struct
     t_immutable_of_t _state
 
   let set_state_field (f : ([> `Set_and_create ], 'r, 'a) Fieldslib.Field.t_with_perm) (value : 'a) =
-    (Fieldslib.Field.setter f |> Option.get) _state value;
-    update_since_last_use := true
+    if Fieldslib.Field.get f _state != value then (
+        (Fieldslib.Field.setter f |> Option.get) _state value;
+        update_since_last_use := true
+    ) else ()
 end
 
 let update_data () =
@@ -95,10 +100,15 @@ let update_data () =
         warn (fun f -> f "Parsing doc failed; not updating cached value"))
     | Error code -> err (fun f -> code |> string_of_int |> f "Failed to fetch doc: %s")
 
-let rec run () =
-  let* () = Lwt.catch (fun () ->
-    let* () = update_data () in
-    let* () = info (fun f -> f "Updated data!") in
-    Lwt_unix.sleep 60.
-  ) (fun e -> err (fun f -> f "Uncaught exception in scraper: %s" (Printexc.to_string e))) in
-  run ()
+let run () =
+  let* redis = Redis_lwt.Client.connection_spec Constants.redis_host |> Redis_lwt.Client.connect in
+  let rec loop () =
+    let* () = Lwt.catch (fun () ->
+      let* m = Redis_lwt.Client.get redis Constants.message_key in
+      Mutable_state.(set_state_field Fields.message m);
+      let* () = update_data () in
+      let* () = info (fun f -> f "Updated data!") in
+      Lwt_unix.sleep 60.
+    ) (fun e -> err (fun f -> f "Uncaught exception in scraper: %s" (Printexc.to_string e))) in
+    loop ()
+  in loop ()

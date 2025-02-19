@@ -28,9 +28,9 @@ let run () =
     Dream.get "/" (fun _request ->
       let open Scraper_thread.Mutable_state in
       let* () = if !update_since_last_use then (
-        let { data; stale; last_updated } = Scraper_thread.Mutable_state.use () in
+        let { data; stale; last_updated; message } = Scraper_thread.Mutable_state.use () in
         let+ () = info (fun f -> f "Regenerating response") in
-        cached_html := render ~data ~stale ~last_updated ()
+        cached_html := render ~data ~stale ~last_updated ~message ()
       ) else Lwt.return_unit in
       Dream.html !cached_html
     );

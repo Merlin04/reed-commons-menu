@@ -3,6 +3,7 @@
     --background-body: #ffffff;
     --light-gray: #e1e0db;
     --reed-red: #A70E16;
+    --bg-red: #A70E1622;
 }
 
 body {
@@ -25,20 +26,32 @@ a:hover {
     text-decoration: underline;
 }
 
-.alert {
-    /*max-width: max-content;*/
+.alert, .info {
     padding: 0.5rem;
     padding-left: 2.25rem;
     position: relative;
     border-radius: 0.25rem;
+}
+
+.alert {
     background-color: var(--reed-red);
     color: var(--background-body);
 }
 
-.alert::before {
+.info {
+    background-color: var(--bg-red);
+    border: 1px solid var(--reed-red);
+    margin-bottom: 0.75rem;
+}
+
+.alert::before, .info::before {
     content: "⚠ ";
     position: absolute;
     left: 0.75rem;
+}
+
+.info::before {
+    content: "ⓘ ";
 }
 
 .alert a {

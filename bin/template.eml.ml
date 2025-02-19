@@ -134,7 +134,7 @@ let render_data ({ items; dayparts } : Scraper.t) (stale : bool) =
 % end;
   </div>
 
-let render ~data ~stale ~last_updated () =
+let render ~data ~stale ~last_updated ~message () =
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -159,6 +159,12 @@ let render ~data ~stale ~last_updated () =
   </head>
   <body>
     <h1 id="title">Reed Commons Cafe Menu</h1>
+% if Option.is_some message then begin
+    <div class="info">
+      <%s! Option.get message %>
+    </div>
+% end
+% else ();
 % if Option.is_some data then begin
     <%s! render_data (Option.get data) stale %>
 % if debug_include_data_in_response then begin

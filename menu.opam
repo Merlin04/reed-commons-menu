@@ -21,6 +21,7 @@ depends: [
   "ppx_stable"
   "crunch"
   "timedesc"
+  "redis-lwt"
   "odoc" {with-doc}
 ]
 build: [
