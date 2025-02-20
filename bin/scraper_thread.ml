@@ -101,11 +101,16 @@ let update_data () =
     | Error code -> err (fun f -> code |> string_of_int |> f "Failed to fetch doc: %s")
 
 let run () =
-  let* redis = Redis_lwt.Client.connection_spec Constants.redis_host |> Redis_lwt.Client.connect in
   let rec loop () =
     let* () = Lwt.catch (fun () ->
-      let* m = Redis_lwt.Client.get redis Constants.message_key in
-      Mutable_state.(set_state_field Fields.message m);
+      let* () = Lwt.catch (fun () ->
+        let* redis = Redis_lwt.Client.connection_spec Constants.redis_host |> Redis_lwt.Client.connect in
+        let+ m = Redis_lwt.Client.get redis Constants.message_key in
+        Mutable_state.(set_state_field Fields.message m)
+      ) (fun e ->
+        Mutable_state.(set_state_field Fields.message None);
+        warn (fun f -> f "Failed to get message from Redis: %s" (Printexc.to_string e))
+      ) in
       let* () = update_data () in
       let* () = info (fun f -> f "Updated data!") in
       Lwt_unix.sleep 60.
