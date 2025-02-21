@@ -103,11 +103,11 @@ let update_data () =
 let rec run () =
   let* () = Lwt.catch (fun () ->
     (* get data from redis *)
-    let* () = Lwt.catch (fun () ->
-      let* redis = Redis_lwt.Client.connection_spec Constants.redis_host |> Redis_lwt.Client.connect in
-      let+ m = Redis_lwt.Client.get redis Constants.message_key in
-      Mutable_state.(set_state_field Fields.message m)
-    ) (fun e ->
+    let* () = try (
+      let redis = Redis_sync.Client.connection_spec Constants.redis_host |> Redis_sync.Client.connect in
+      let m = Redis_sync.Client.get redis Constants.message_key in
+      Mutable_state.(set_state_field Fields.message m); Lwt.return_unit
+    ) with e -> (
       Mutable_state.(set_state_field Fields.message None);
       warn (fun f -> f "Failed to get message from Redis: %s" (Printexc.to_string e))
     ) in
