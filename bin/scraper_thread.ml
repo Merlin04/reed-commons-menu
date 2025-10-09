@@ -4,17 +4,25 @@ open Cohttp_lwt_unix
 open Logs_lwt
 open Scraper
 
-(* i think this should be good enough? if we need to, generalize to just 262 or add allowlist for 265, 266 *)
-let item_id_denylist = ["2627"; "2628"]
-
-let filter_station_items : string list -> string list = List.filter (fun v ->
-  not @@ List.exists (fun p -> String.starts_with ~prefix:p v) item_id_denylist
-)
-
 let menu_items_re = Re.Perl.re "Bamco\\.menu\\_items = (.*);" |> Re.Perl.compile
 let daypart_re = Re.Perl.re "Bamco\\.dayparts\\['(\\d+)'\\] = (.*);" |> Re.Perl.compile
 
 let debug_str s = print_endline s; s
+
+(* for some reason, bamco decided to change it so a station now represents an entire cafe, and there's additional
+   data attached to the menu_item telling you what the actual station is *)
+let transform_stations (menu_items : menu_item list) (stations : station list) =
+  stations
+    |> List.concat_map (fun (s : station) -> s.items)
+    |> List.map (fun id -> menu_items |> List.find (fun (i : menu_item) -> id = i.id)) (* get menu_items *)
+    |> List.filter (fun item -> item.tier = 1)
+    |> List.map (fun item -> (item.station, item))
+    |> List.fold_left (fun acc (k, v) ->
+          match (List.assoc_opt k acc) with
+            | Some l -> (k, (v :: l)) :: (List.remove_assoc k acc)
+            | None -> (k, [v]) :: acc
+      ) []
+    |> List.map (fun (s, is) -> { id = ""; label = s; items = is |> List.map (fun (i : menu_item) -> i.id) })
 
 let parse_doc body : t option =
   let ( let@ ) = Option.bind in
@@ -27,11 +35,11 @@ let parse_doc body : t option =
     |> List.sort (fun (n1, _) (n2, _) -> n1 - n2)
     |> List.map (fun (_, p) -> p |> Yojson.Safe.from_string |> daypart_of_yojson |> function
       | Ok v -> Some v
-      | Error s -> Logs.err (fun f -> f "Failed to parse daypart JSON: %s" s); None)
+      | Error s -> Logs.err (fun f -> f "Failed to parse daypart JSON: %s\n%s\n\n" s p); None)
     |> List.fold_left (fun ao co -> let@ acc = ao in let@ cur = co in Some (cur :: acc)) (Some [])
     |> Option.map (fun ds -> ds
         |> List.map (fun d -> { d with stations =
-            List.map (fun (s : station) -> { s with items = filter_station_items s.items }) d.stations
+            transform_stations items d.stations
               |> List.filter (fun (s : station) -> List.length s.items <> 0) })
         |> List.rev
     )

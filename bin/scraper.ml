@@ -10,12 +10,21 @@ type item_flag =
   | Humane [@value 18]
 [@@deriving enum, show { with_path = false }, yojson]
 
+let menu_item_station_re = Re.Perl.re "<strong>@(.*)</strong>" |> Re.Perl.compile
+
 type menu_item = {
   id : string;
   label : string;
   description : string;
   price : string;
-  station_id : string;
+  station : string [@of_yojson (function
+    | `String s -> Ok (let s = Re.all menu_item_station_re s in Re.Group.get (List.nth s 0) 1)
+    | _ -> Error "Unexpected type for menu_item.station")];
+  (* we should only display tier 1 *)
+  tier : int [@of_yojson (function
+    | `String s -> Ok (int_of_string s)
+    | `Int i -> Ok i
+    | _ -> Error "Unexpected type for menu_item.tier")];
   flags : item_flag list [@of_yojson (function
     | `Assoc l -> Ok (List.filter_map (fun (k, _) -> k |> int_of_string |> item_flag_of_enum) l)
     | _ -> Ok [])] [@key "cor_icon"];
@@ -27,7 +36,10 @@ let menu_items_of_yojson : Yojson.Safe.t -> menu_item list error_or = function
   | _ -> Error "Menu items data not in expected form"
 
 type station = {
-  id : string;
+  id : string [@of_yojson (function
+    | `Int i -> Ok (string_of_int i)
+    | `String s -> Ok s
+    | v -> (Logs.err (fun f -> f "Unexpected type for station.id; found value %s" (Yojson.Safe.show v))); Error "Unexpected type for station.id") ];
   label : string;
   items: string list;
 }
@@ -53,8 +65,10 @@ type daypart = {
     [@printer Timedesc.Span.pp];
   id : string;
   label : string;
-  abbreviation : string;
-  message : string;
+  message : string [@key "messages"]
+    [@of_yojson (function
+      | `Assoc ((_, (`String s)) :: _) -> Ok s
+      | _ -> Error "Unexpected type for daypart.messages")];
   stations : station list;
 }
 [@@deriving show, yojson { strict = false }]

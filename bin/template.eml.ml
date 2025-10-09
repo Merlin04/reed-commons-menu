@@ -88,7 +88,7 @@ let render_data ({ items; dayparts } : Scraper.t) (stale : bool) =
   <div id="contents">
 % if stale then begin
   <p class="alert">
-    There was an internal error fetching the most up-to-date menu data from Bon Appetit; if this continues for more than a minute or two and the <a href="https://reed.cafebonappetit.com">official menu site</a> is working properly, please <a href="site-about">contact me</a> because something is broken.
+    There was an internal error fetching the most up-to-date menu data from Bon Appetit; if this continues for more than a minute or two and the <a href="https://reed.cafebonappetit.com">official menu site</a> is working properly, please email me because something is broken (my Reed email is <code>bsmith</code>).
   </p>
 % end
 % else ();
