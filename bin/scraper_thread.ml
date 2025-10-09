@@ -114,6 +114,7 @@ let rec run () =
     let* () = try (
       let redis = Redis_sync.Client.connection_spec Constants.redis_host |> Redis_sync.Client.connect in
       let m = Redis_sync.Client.get redis Constants.message_key in
+      Redis_sync.Client.disconnect redis;
       Mutable_state.(set_state_field Fields.message m); Lwt.return_unit
     ) with e -> (
       Mutable_state.(set_state_field Fields.message None);
