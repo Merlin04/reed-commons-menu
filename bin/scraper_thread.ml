@@ -22,7 +22,8 @@ let transform_stations (menu_items : menu_item list) (stations : station list) =
             | Some l -> (k, (v :: l)) :: (List.remove_assoc k acc)
             | None -> (k, [v]) :: acc
       ) []
-    |> List.map (fun (s, is) -> { id = ""; label = s; items = is |> List.map (fun (i : menu_item) -> i.id) })
+    |> List.rev
+    |> List.map (fun (s, is) -> { id = ""; label = s; items = is |> List.map (fun (i : menu_item) -> i.id) |> List.rev })
 
 let parse_doc body : t option =
   let ( let@ ) = Option.bind in
