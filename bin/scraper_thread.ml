@@ -9,8 +9,10 @@ let daypart_re = Re.Perl.re "Bamco\\.dayparts\\['(\\d+)'\\] = (.*);" |> Re.Perl.
 
 let debug_str s = print_endline s; s
 
-(* for some reason, bamco decided to change it so a station now represents an entire cafe, and there's additional
-   data attached to the menu_item telling you what the actual station is *)
+(* 2025-10-09: for some reason, bamco decided to change it so a station now represents an entire cafe, and there's
+   additional data attached to the menu_item telling you what the actual station is *)
+(* 2025-10-27: they reverted the change?? but kept all the new fields?? this code still works so i'll just keep it
+   around in case they bring the change back *)
 let transform_stations (menu_items : menu_item list) (stations : station list) =
   stations
     |> List.concat_map (fun (s : station) -> s.items)

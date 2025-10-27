@@ -68,10 +68,18 @@ type daypart = {
   message : string [@key "messages"]
     [@of_yojson (function
       | `Assoc ((_, (`String s)) :: _) -> Ok s
+      | `String s -> Ok s
       | _ -> Error "Unexpected type for daypart.messages")];
   stations : station list;
 }
 [@@deriving show, yojson { strict = false }]
+
+let daypart_of_yojson y =
+  let y = match y with
+    | `Assoc l -> `Assoc (l |> List.map (fun (k, v) -> if k = "message" then ("messages", v) else (k, v)))
+    | _ -> failwith "Daypart expected to be `Assoc, but it wasn't"
+  in
+  daypart_of_yojson y
 
 type t = {
   items : menu_item list;
