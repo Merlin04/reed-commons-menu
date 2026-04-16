@@ -59,10 +59,9 @@ a:hover {
 }
 
 details {
-    border-radius: 0.5rem;
-    overflow: hidden;
+    --details-br: 0.5rem;
+    border-radius: var(--details-br);
     padding: 0.25rem 1rem;
-    /*background-color: rgba(0, 0, 0, 0.1);*/
     background-color: var(--light-gray);
 }
 
@@ -72,10 +71,14 @@ details summary {
     background-color: rgba(0, 0, 0, 0.1);
     cursor: pointer;
     user-select: none;
+    border-radius: var(--details-br);
+}
+
+details[open] summary {
+    border-radius: var(--details-br) var(--details-br) 0 0;
 }
 
 #title {
-    /*background-color: var(--light-gray);*/
     color: var(--background-body);
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
